@@ -495,8 +495,8 @@ wss.on("connection", (ws) => {
           const normalize = (str) =>
             str
               .toLowerCase()
-              .replace(/\(.*\)/g, "")
-              .replace(/[^a-z0-9]/g, "")
+              .replace(/\(.*?\)/g, "")
+              .replace(/[^a-z0-9א-ת0-9 ]/gi, "")
               .trim();
 
           const guess = normalize(data.guess);
