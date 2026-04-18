@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageDisplay = document.getElementById("message-display");
 
   // WebSocket connection
-  const ws = new WebSocket(`ws://${window.location.host}`);
+  ws = new WebSocket("wss://https://quiz-songs-server.onrender.com");
 
   ws.onopen = () => {
     console.log("Connected to WebSocket server.");
