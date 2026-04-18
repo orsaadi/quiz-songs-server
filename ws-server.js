@@ -127,9 +127,9 @@ async function startGame(roomCode) {
       });
 
       // 🏆 leaderboard
-      const leaderboard = Array.from(room.users.keys()).map((username) => ({
+      const leaderboard = [...room.users.keys()].map((username) => ({
         username,
-        score: room.scores[username] || 0,
+        score: room.scores?.[username] ?? 0,
       }));
 
       // 📤 send results
@@ -160,6 +160,7 @@ async function startGame(roomCode) {
 
   console.log(`🏁 Game finished in room ${roomCode}`);
   room.gameRunning = false;
+  room.gameState = false;
 }
 
 const rooms = {};
