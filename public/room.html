@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skribble Room</title>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          "Noto Sans",
+          sans-serif;
+
+        margin: 0;
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+
+        background-color: #f3f4f6;
+        color: #1f2937;
+      }
+
+      /* -------------------- Container -------------------- */
+      .container {
+        width: 100%;
+        max-width: 28rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      /* -------------------- Title -------------------- */
+      .title {
+        text-align: center;
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #1f2937;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #0f172a;
+          color: #f9fafb;
+        }
+
+        .title {
+          color: #f9fafb;
+        }
+      }
+
+      /* -------------------- Card -------------------- */
+      .card {
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .card {
+          background-color: #111827;
+          border-color: #374151;
+        }
+      }
+
+      .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .card-header {
+          border-color: #374151;
+        }
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .card-description {
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .card-description {
+          color: #9ca3af;
+        }
+      }
+
+      .card-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      /* -------------------- Room Info -------------------- */
+      .room-code-display {
+        text-align: center;
+        font-size: 1.125rem;
+        font-weight: 600;
+      }
+
+      .room-code-display span {
+        color: #2563eb;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .room-code-display span {
+          color: #3b82f6;
+        }
+      }
+
+      .host-display span {
+        color: #dc2626;
+        font-weight: 700;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .host-display span {
+          color: #ef4444;
+        }
+      }
+
+      /* -------------------- Users -------------------- */
+      .users-in-room {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .users-in-room {
+          border-color: #374151;
+        }
+      }
+
+      .users-title {
+        text-align: center;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+      }
+
+      .user-list {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .user-list li {
+        background-color: #e0e7ff;
+        color: #3730a3;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .user-list li {
+          background-color: #4338ca;
+          color: #e0e7ff;
+        }
+      }
+
+      /* -------------------- Buttons -------------------- */
+      .button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0.625rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+      }
+
+      .button.primary {
+        background-color: #2563eb;
+        color: white;
+      }
+
+      .button.primary:hover {
+        background-color: #1d4ed8;
+      }
+
+      /* Start button special */
+      #start-game-btn {
+        margin-top: 1rem;
+        padding: 12px 32px;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 8px;
+        font-weight: bold;
+      }
+
+      #start-game-btn:hover {
+        background-color: #388e3c;
+      }
+
+      .album-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .album-card {
+        background: #fff;
+        border-radius: 14px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .album-card:hover {
+        transform: translateY(-3px);
+      }
+
+      /* .album-card.selected {
+        border: 3px solid #4caf50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+      } */
+
+      .random-inner {
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .random-icon {
+        font-size: 42px;
+      }
+
+      .album-card.selected {
+        border: 3px solid #4caf50;
+        transform: scale(1.05);
+      }
+
+      .album-card:hover {
+        transform: scale(1.05);
+      }
+
+      .album-card img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+      }
+
+      .album-card p {
+        margin: 5px;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      /* -------------------- Optional message box -------------------- */
+      .message-box {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        text-align: center;
+        border-radius: 0.375rem;
+        background-color: #dbeafe;
+        color: #1e40af;
+        display: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .message-box {
+          background-color: #1e3a8a;
+          color: #bfdbfe;
+        }
+      }
+
+      /* -------------------- Mobile -------------------- */
+      @media (max-width: 640px) {
+        .title {
+          font-size: 1.5rem;
+        }
+
+        .card-header,
+        .card-content {
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">Welcome to the Room!</h1>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Room Details</h2>
+          <p class="card-description">
+            You have successfully joined this room.
+          </p>
+        </div>
+        <div class="card-content">
+          <p class="room-code-display">
+            Room Code: <span id="display-room-code"></span>
+          </p>
+          <p class="room-code-display">
+            Username: <span id="display-username"></span>
+          </p>
+          <p class="room-code-display host-display">
+            Host: <span id="display-host-username">Loading...</span>
+          </p>
+
+          <div class="users-in-room">
+            <h3 class="users-title">Users in Room:</h3>
+            <ul id="user-list" class="user-list">
+              User list will be populated here by JavaScript
+            </ul>
+          </div>
+
+          <!-- Start Game Button (hidden by default, shown only for host) -->
+          <button id="start-game-btn" style="display: none">Start Game</button>
+
+          <p class="text-center text-gray-600 dark:text-gray-400 mt-4">
+            This is a placeholder for your game. In a real application, this
+            page would contain the drawing canvas, chat, and other game
+            elements.
+          </p>
+          <button id="leave-room-btn" class="button primary mt-4">
+            Leave Room
+          </button>
+        </div>
+      </div>
+      <div id="album-selector" style="display: none; margin-top: 20px">
+        <h3>Select Music</h3>
+
+        <!-- 🔍 SEARCH -->
+        <input
+          id="albumSearch"
+          placeholder="Search albums..."
+          style="width: 100%; padding: 10px; margin-bottom: 10px"
+        />
+
+        <!-- 🎲 RANDOM -->
+        <div id="random-card" class="album-card selected">
+          <div class="random-inner">
+            <div class="random-icon">🎲</div>
+            <p>Completely Random Songs</p>
+            <small>Mix of random albums</small>
+          </div>
+        </div>
+        <!-- 📀 GRID -->
+        <div id="albumGrid" class="album-grid"></div>
+      </div>
+    </div>
+    <script src="/room-script.js"></script>
+  </body>
+</html>

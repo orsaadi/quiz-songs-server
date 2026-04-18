@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Room System Testing</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">LOBBY</h1>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Create Room</h2>
+          <p class="card-description">
+            Generate a new room code to invite friends.
+          </p>
+        </div>
+        <div class="card-content">
+          <div class="form-group">
+            <label for="create-username" class="label">Username</label>
+            <input
+              type="text"
+              id="create-username"
+              placeholder="Enter your username"
+              class="input"
+            />
+          </div>
+          <button id="create-room-btn" class="button primary">
+            Create Room
+          </button>
+          <p id="create-room-code-display" class="room-code-display"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Join Room</h2>
+          <p class="card-description">
+            Enter a room code to join an existing game.
+          </p>
+        </div>
+        <div class="card-content">
+          <div class="form-group">
+            <label for="join-username" class="label">Username</label>
+            <input
+              type="text"
+              id="join-username"
+              placeholder="Enter your username"
+              class="input"
+            />
+          </div>
+          <div class="form-group">
+            <label for="room-code-input" class="label">Room Code</label>
+            <input
+              type="text"
+              id="room-code-input"
+              placeholder="Enter 6-digit code"
+              maxlength="6"
+              class="input uppercase"
+            />
+          </div>
+          <button id="join-room-btn" class="button primary">Join Room</button>
+        </div>
+      </div>
+
+      <div id="message-display" class="message-box"></div>
+    </div>
+    <script src="/script.js"></script>
+  </body>
+</html>
