@@ -15,6 +15,9 @@ async function startGame(roomCode) {
   const room = rooms[roomCode];
   if (!room) return;
 
+  if (room.gameRunning) return;
+  room.gameRunning = true;
+
   room.round = 1;
 
   // 🧠 track played songs (no repeats)
@@ -156,6 +159,7 @@ async function startGame(roomCode) {
   }
 
   console.log(`🏁 Game finished in room ${roomCode}`);
+  room.gameRunning = false;
 }
 
 const rooms = {};
@@ -347,6 +351,7 @@ wss.on("connection", (ws) => {
             selectedAlbums: ["random"],
 
             usedSongs: new Set(),
+            gameRunning: false,
           };
 
           rooms[roomCode].users.set(username, {
@@ -464,7 +469,9 @@ wss.on("connection", (ws) => {
 
           room.usedSongs = new Set();
 
-          startGame(roomCode);
+          if (!room.gameRunning) {
+            startGame(roomCode);
+          }
 
           room.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
