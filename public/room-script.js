@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // WebSocket connection
-  ws = new WebSocket("wss://https://quiz-songs-server.onrender.com");
+  ws = new WebSocket("wss://quiz-songs-server.onrender.com");
 
   ws.onopen = () => {
     console.log("Connected to WebSocket server from room page.");
