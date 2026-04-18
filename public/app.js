@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let guessedPlayers = [];
 
   // 🌐 WEBSOCKET
-  ws = new WebSocket("wss://https://quiz-songs-server.onrender.com");
+  ws = new WebSocket("wss://quiz-songs-server.onrender.com");
 
   // =========================
   // 🎮 JOIN ROOM ON CONNECT
