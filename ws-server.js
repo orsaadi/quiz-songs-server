@@ -15,101 +15,99 @@ async function startGame(roomCode) {
   const room = rooms[roomCode];
   if (!room) return;
 
+  // 🚨 prevent multiple loops
   if (room.gameRunning) return;
   room.gameRunning = true;
 
   room.round = 1;
 
-  // 🧠 track played songs (no repeats)
-  if (!room.playedSongs) room.playedSongs = new Set();
+  // 🧠 reset tracking
+  room.playedSongs = new Set();
 
   while (room.round <= 10) {
     try {
-      // =========================
-      // 🎯 PICK SOURCE (album / artist / random)
-      // =========================
-      let chosen = "random";
-
-      const list = room.selectedAlbums || [];
-
-      if (!list.includes("random") && list.length > 0) {
-        chosen = list[Math.floor(Math.random() * list.length)];
-      }
-
-      // =========================
-      // 🎵 BUILD REQUEST
-      // =========================
-      let url = `http://localhost:${PORT}/api/random-song`;
-
       let song = null;
 
-      // 🎵 PLAYLIST MODE
+      // =========================
+      // 🎵 PLAYLIST MODE (PRIORITY)
+      // =========================
       if (room.usePlaylist && room.playlistTracks?.length) {
-        const available = room.playlistTracks.filter(t => {
+        const available = room.playlistTracks.filter((t) => {
           const key = `${t.title}-${t.artist}`;
           return !room.playedSongs.has(key);
         });
-      
+
         if (available.length > 0) {
           song = available[Math.floor(Math.random() * available.length)];
           room.playedSongs.add(`${song.title}-${song.artist}`);
         } else {
-          song = room.playlistTracks[Math.floor(Math.random() * room.playlistTracks.length)];
-        }
-      }
-
-      if (chosen !== "random") {
-        // 👇 detect artist vs album
-        if (chosen.startsWith("artist:")) {
-          const artistId = chosen.replace("artist:", "");
-          url += `?artist=${artistId}`;
-        } else if (chosen.startsWith("album:")) {
-          const albumId = chosen.replace("album:", "");
-          url += `?album=${albumId}`;
-        } else {
-          // fallback (just in case something weird gets in)
-          url += `?album=${chosen}`;
+          // fallback if all used
+          song =
+            room.playlistTracks[
+              Math.floor(Math.random() * room.playlistTracks.length)
+            ];
         }
       }
 
       // =========================
-      // 🔁 FETCH UNIQUE SONG (no repeats)
+      // 🎯 API MODE (album / artist / random)
       // =========================
-      let song = null;
-      let attempts = 0;
-
-      while (attempts < 10) {
-        const response = await fetch(url);
-        const candidate = await response.json();
-
-        const songKey = `${candidate.title}-${candidate.artist}`;
-
-        if (!room.playedSongs.has(songKey)) {
-          song = candidate;
-          room.playedSongs.add(songKey);
-          break;
-        }
-
-        attempts++;
-      }
-
-      // ❗ fallback if somehow all repeated
       if (!song) {
-        console.warn("⚠️ Could not find unique song, reusing...");
-        const response = await fetch(url);
-        song = await response.json();
+        let chosen = "random";
+
+        const list = room.selectedAlbums || [];
+
+        if (!list.includes("random") && list.length > 0) {
+          chosen = list[Math.floor(Math.random() * list.length)];
+        }
+
+        let url = `http://localhost:${PORT}/api/random-song`;
+
+        if (chosen !== "random") {
+          if (chosen.startsWith("artist:")) {
+            const artistId = chosen.replace("artist:", "");
+            url += `?artist=${artistId}`;
+          } else if (chosen.startsWith("album:")) {
+            const albumId = chosen.replace("album:", "");
+            url += `?album=${albumId}`;
+          } else {
+            url += `?album=${chosen}`;
+          }
+        }
+
+        let attempts = 0;
+
+        while (attempts < 10) {
+          const response = await fetch(url);
+          const candidate = await response.json();
+
+          const key = `${candidate.title}-${candidate.artist}`;
+
+          if (!room.playedSongs.has(key)) {
+            song = candidate;
+            room.playedSongs.add(key);
+            break;
+          }
+
+          attempts++;
+        }
+
+        // fallback if all repeated
+        if (!song) {
+          const response = await fetch(url);
+          song = await response.json();
+        }
       }
-
-      room.currentSong = song;
-
-      console.log(`Room ${roomCode} - Round ${room.round}`);
-      console.log("🎵", song.title, "by", song.artist);
 
       // =========================
       // 🎮 START ROUND
       // =========================
+      room.currentSong = song;
       room.roundActive = true;
       room.correctOrder = [];
+
+      console.log(`Room ${roomCode} - Round ${room.round}`);
+      console.log("🎵", song.title, "by", song.artist);
 
       room.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -118,7 +116,7 @@ async function startGame(roomCode) {
               type: "new-round",
               round: room.round,
               song: song,
-            }),
+            })
           );
         }
       });
@@ -131,13 +129,13 @@ async function startGame(roomCode) {
       // =========================
       room.roundActive = false;
 
-      const totalPlayers = room.users.size;
+      const totalPlayers = room.users.size || 1;
       const maxPoints = 400;
 
       room.correctOrder.forEach((username, index) => {
         const points = Math.max(
           0,
-          Math.floor(maxPoints * (1 - index / totalPlayers)),
+          Math.floor(maxPoints * (1 - index / totalPlayers))
         );
 
         room.scores[username] = (room.scores[username] || 0) + points;
@@ -149,7 +147,8 @@ async function startGame(roomCode) {
         score: room.scores?.[username] ?? 0,
       }));
 
-      // 📤 send results
+      console.log("📤 sending leaderboard", leaderboard);
+
       room.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(
@@ -157,7 +156,7 @@ async function startGame(roomCode) {
               type: "round-end",
               leaderboard,
               song: room.currentSong,
-            }),
+            })
           );
         }
       });
@@ -165,7 +164,7 @@ async function startGame(roomCode) {
       // reset for next round
       room.correctOrder = [];
 
-      // ⏳ show leaderboard (5s)
+      // ⏳ show leaderboard
       await new Promise((r) => setTimeout(r, 5000));
 
       room.round++;
@@ -176,6 +175,8 @@ async function startGame(roomCode) {
   }
 
   console.log(`🏁 Game finished in room ${roomCode}`);
+
+  // ✅ reset flags
   room.gameRunning = false;
   room.gameState = false;
 }
