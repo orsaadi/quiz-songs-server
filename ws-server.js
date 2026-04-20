@@ -61,7 +61,7 @@ async function startGame(roomCode) {
           chosen = list[Math.floor(Math.random() * list.length)];
         }
 
-        let url = `http://localhost:${PORT}/api/random-song`;
+        let url = `https://quiz-songs-server.onrender.com/api/random-song`;
 
         if (chosen !== "random") {
           if (chosen.startsWith("artist:")) {
