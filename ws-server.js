@@ -307,7 +307,7 @@ wss.on("connection", (ws) => {
 
   console.log(`Client ${ws.id} connected.`);
 
-  ws.on("message", (message) => {
+  ws.on("message", async (message) => {
     try {
       const data = JSON.parse(message);
 
