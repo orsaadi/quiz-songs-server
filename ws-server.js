@@ -41,6 +41,23 @@ async function startGame(roomCode) {
       // =========================
       let url = `http://localhost:${PORT}/api/random-song`;
 
+      let song = null;
+
+      // 🎵 PLAYLIST MODE
+      if (room.usePlaylist && room.playlistTracks?.length) {
+        const available = room.playlistTracks.filter(t => {
+          const key = `${t.title}-${t.artist}`;
+          return !room.playedSongs.has(key);
+        });
+      
+        if (available.length > 0) {
+          song = available[Math.floor(Math.random() * available.length)];
+          room.playedSongs.add(`${song.title}-${song.artist}`);
+        } else {
+          song = room.playlistTracks[Math.floor(Math.random() * room.playlistTracks.length)];
+        }
+      }
+
       if (chosen !== "random") {
         // 👇 detect artist vs album
         if (chosen.startsWith("artist:")) {
