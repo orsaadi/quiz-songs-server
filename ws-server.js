@@ -468,7 +468,45 @@ wss.on("connection", (ws) => {
             return;
           }
 
-            case "setPlaylist": {
+          if (ws.username !== room.hostUsername) {
+            ws.send(
+              JSON.stringify({
+                type: "error",
+                message: "Only the host can start the game.",
+              }),
+            );
+            return;
+          }
+
+          room.selectedAlbums = albums && albums.length ? albums : ["random"];
+
+          room.gameState = true;
+          room.round = 1;
+          room.roundActive = true;
+          room.guesses = {};
+          room.scores = room.scores || {};
+
+          room.usedSongs = new Set();
+
+          if (!room.gameRunning) {
+            startGame(roomCode);
+          }
+
+          room.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(
+                JSON.stringify({
+                  type: "gameStarted",
+                  round: room.round,
+                }),
+              );
+            }
+          });
+
+          break;
+        }
+
+          case "setPlaylist": {
     const room = rooms[ws.roomCode];
     if (!room) return;
   
@@ -514,44 +552,6 @@ wss.on("connection", (ws) => {
   
     break;
   }
-
-          if (ws.username !== room.hostUsername) {
-            ws.send(
-              JSON.stringify({
-                type: "error",
-                message: "Only the host can start the game.",
-              }),
-            );
-            return;
-          }
-
-          room.selectedAlbums = albums && albums.length ? albums : ["random"];
-
-          room.gameState = true;
-          room.round = 1;
-          room.roundActive = true;
-          room.guesses = {};
-          room.scores = room.scores || {};
-
-          room.usedSongs = new Set();
-
-          if (!room.gameRunning) {
-            startGame(roomCode);
-          }
-
-          room.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-              client.send(
-                JSON.stringify({
-                  type: "gameStarted",
-                  round: room.round,
-                }),
-              );
-            }
-          });
-
-          break;
-        }
 
         case "guess": {
           const room = rooms[ws.roomCode];
