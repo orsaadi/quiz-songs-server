@@ -114,6 +114,40 @@ document.addEventListener("DOMContentLoaded", () => {
     return div;
   }
 
+  const playlistInput = document.getElementById("playlistInput");
+const loadPlaylistBtn = document.getElementById("loadPlaylistBtn");
+const playlistStatus = document.getElementById("playlistStatus");
+
+// 🎯 extract playlist ID from URL
+function extractPlaylistId(url) {
+  const match = url.match(/playlist\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+loadPlaylistBtn.addEventListener("click", () => {
+  const url = playlistInput.value.trim();
+
+  if (!url) {
+    playlistStatus.textContent = "❌ Please paste a playlist link";
+    return;
+  }
+
+  const playlistId = extractPlaylistId(url);
+
+  if (!playlistId) {
+    playlistStatus.textContent = "❌ Invalid Deezer playlist link";
+    return;
+  }
+
+  // 📡 send to server
+  ws.send(JSON.stringify({
+    type: "setPlaylist",
+    playlistId
+  }));
+
+  playlistStatus.textContent = "⏳ Loading playlist...";
+});
+
   async function searchAll(query) {
     const grid = document.getElementById("albumGrid");
     grid.innerHTML = "";
