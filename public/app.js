@@ -105,6 +105,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function extractPlaylistId(url) {
+  const match = url.match(/playlist\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+  const playlistId = extractPlaylistId(inputValue);
+
+  ws.send(JSON.stringify({
+    type: "setPlaylist",
+    playlistId
+  }));
+
   async function showLeaderboard(leaderboard, song) {
     const popup = document.getElementById("leaderboardPopup");
     const content = document.getElementById("leaderboardContent");
