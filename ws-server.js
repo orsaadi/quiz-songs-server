@@ -450,6 +450,53 @@ wss.on("connection", (ws) => {
             return;
           }
 
+            case "setPlaylist": {
+    const room = rooms[ws.roomCode];
+    if (!room) return;
+  
+    const { playlistId } = data;
+  
+    try {
+      const response = await fetch(`https://api.deezer.com/playlist/${playlistId}`);
+      const json = await response.json();
+  
+      if (!json.tracks || !json.tracks.data.length) {
+        ws.send(JSON.stringify({
+          type: "error",
+          message: "Playlist is empty or invalid"
+        }));
+        return;
+      }
+  
+      room.playlistTracks = json.tracks.data
+        .filter(t => t.preview)
+        .map(t => ({
+          title: t.title,
+          artist: t.artist?.name || "Unknown",
+          preview: t.preview,
+          cover: t.album?.cover_big || t.album?.cover || ""
+        }));
+  
+      room.usePlaylist = true;
+  
+      ws.send(JSON.stringify({
+        type: "playlistLoaded",
+        count: room.playlistTracks.length
+      }));
+  
+      console.log(`Playlist loaded: ${room.playlistTracks.length} tracks`);
+  
+    } catch (err) {
+      console.error(err);
+      ws.send(JSON.stringify({
+        type: "error",
+        message: "Failed to load playlist"
+      }));
+    }
+  
+    break;
+  }
+
           if (ws.username !== room.hostUsername) {
             ws.send(
               JSON.stringify({
