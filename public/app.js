@@ -97,27 +97,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-    function startTimer(duration = 30) {
-    const timerEl = document.getElementById("timer");
-  
-    clearInterval(roundTimer);
-  
-    timeLeft = duration;
+    let roundTimer = null;
+let timeLeft = 30;
+
+function startTimer(duration = 30) {
+  const timerEl = document.getElementById("timer");
+  const bar = document.getElementById("timerBar");
+
+  clearInterval(roundTimer);
+
+  timeLeft = duration;
+  timerEl.textContent = timeLeft;
+  bar.style.width = "100%";
+
+  roundTimer = setInterval(() => {
+    timeLeft--;
+
     timerEl.textContent = timeLeft;
-  
-    roundTimer = setInterval(() => {
-      timeLeft--;
-      timerEl.textContent = timeLeft;
-  
-      if (timeLeft <= 0) {
-        clearInterval(roundTimer);
-      }
-    }, 1000);
-  }
-  
-  function stopTimer() {
-    clearInterval(roundTimer);
-  }
+
+    // progress bar shrink
+    const percent = (timeLeft / duration) * 100;
+    bar.style.width = percent + "%";
+
+    // 🔴 last 5 seconds turn red
+    if (timeLeft <= 5) {
+      timerEl.style.color = "red";
+      bar.style.background = "red";
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(roundTimer);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(roundTimer);
+
+  document.getElementById("timer").textContent = "0";
+  document.getElementById("timerBar").style.width = "0%";
+}
 
   // =========================
   // 💬 CHAT
