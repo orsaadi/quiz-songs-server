@@ -196,9 +196,26 @@ async function startGame(roomCode) {
 
   console.log(`🏁 Game finished in room ${roomCode}`);
 
-  // ✅ reset flags
+  const finalLeaderboard = [...room.users.keys()].map((username) => ({
+    username,
+    score: room.scores?.[username] ?? 0,
+  }));
+  
+  // 📤 send game over to all clients
+  room.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({
+        type: "game-over",
+        leaderboard: finalLeaderboard
+      }));
+    }
+  });
+  
+  // reset state so lobby works again
   room.gameRunning = false;
   room.gameState = false;
+  room.round = 0;
+  room.correctOrder = [];
 }
 
 const rooms = {};
