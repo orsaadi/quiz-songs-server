@@ -111,18 +111,38 @@ async function startGame(roomCode) {
 
       room.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
+          client.send(JSON.stringify({
               type: "new-round",
               round: room.round,
               song: song,
-            })
-          );
+              duration: 30
+          }));
         }
       });
 
       // ⏱ round duration
-      await new Promise((r) => setTimeout(r, 30000));
+    await new Promise((resolve) => {
+      const start = Date.now();
+    
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - start;
+    
+        const totalPlayers = room.users.size;
+        const guessed = room.correctOrder.length;
+    
+        // ✅ everyone guessed → skip early
+        if (guessed >= totalPlayers && totalPlayers > 0) {
+          clearInterval(interval);
+          resolve();
+        }
+    
+        // ⏱ normal timeout (30s)
+        if (elapsed >= 30000) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 200);
+    });
 
       // =========================
       // 🛑 END ROUND
