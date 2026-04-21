@@ -9,13 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let guessedPlayers = [];
   let lastUsers = [];
 
+  // ✅ ONLY DECLARE ONCE
   let roundTimer = null;
   let timeLeft = 30;
 
   const guessInput = document.getElementById("guessInput");
   const guessButton = document.getElementById("guessBtn");
 
-  // 🌐 WEBSOCKET
   const ws = new WebSocket("wss://quiz-songs-server.onrender.com");
 
   // =========================
@@ -30,18 +30,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    ws.send(
-      JSON.stringify({
-        type: "guess",
-        guess: value,
-      })
-    );
+    ws.send(JSON.stringify({
+      type: "guess",
+      guess: value
+    }));
 
     guessInput.value = "";
-    guessInput.focus(); // 🔥 keep typing
+    guessInput.focus();
   }
 
-  // ENTER = send
   guessInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -49,26 +46,70 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // BUTTON = send
   guessButton.addEventListener("click", sendGuess);
 
   // =========================
   // 🎮 JOIN ROOM
   // =========================
   ws.onopen = () => {
-    console.log("Game WS connected");
-
     const username = sessionStorage.getItem("skribbleUsername");
     const roomCode = new URLSearchParams(window.location.search).get("room");
 
-    ws.send(
-      JSON.stringify({
-        type: "rejoinRoom",
-        roomCode,
-        username,
-      })
-    );
+    ws.send(JSON.stringify({
+      type: "rejoinRoom",
+      roomCode,
+      username
+    }));
   };
+
+  // =========================
+  // ⏱ TIMER
+  // =========================
+  function startTimer(duration = 30) {
+    const timerEl = document.getElementById("timer");
+    const bar = document.getElementById("timerBar");
+
+    clearInterval(roundTimer);
+
+    timeLeft = duration;
+    timerEl.textContent = timeLeft;
+
+    if (bar) {
+      bar.style.width = "100%";
+      bar.style.background = "#4caf50"; // reset color
+    }
+
+    timerEl.style.color = "black";
+
+    roundTimer = setInterval(() => {
+      timeLeft--;
+      timerEl.textContent = timeLeft;
+
+      if (bar) {
+        const percent = (timeLeft / duration) * 100;
+        bar.style.width = percent + "%";
+      }
+
+      if (timeLeft <= 5) {
+        timerEl.style.color = "red";
+        if (bar) bar.style.background = "red";
+      }
+
+      if (timeLeft <= 0) {
+        clearInterval(roundTimer);
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(roundTimer);
+
+    const timerEl = document.getElementById("timer");
+    const bar = document.getElementById("timerBar");
+
+    if (timerEl) timerEl.textContent = "0";
+    if (bar) bar.style.width = "0%";
+  }
 
   // =========================
   // 🎵 PLAY SONG
@@ -92,51 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       document.getElementById("status").innerText = "Now Playing";
     } catch (err) {
-      console.error("PLAY ERROR:", err);
-      document.getElementById("status").innerText = "Error: " + err.message;
+      console.error(err);
     }
   }
-
-    let roundTimer = null;
-let timeLeft = 30;
-
-function startTimer(duration = 30) {
-  const timerEl = document.getElementById("timer");
-  const bar = document.getElementById("timerBar");
-
-  clearInterval(roundTimer);
-
-  timeLeft = duration;
-  timerEl.textContent = timeLeft;
-  bar.style.width = "100%";
-
-  roundTimer = setInterval(() => {
-    timeLeft--;
-
-    timerEl.textContent = timeLeft;
-
-    // progress bar shrink
-    const percent = (timeLeft / duration) * 100;
-    bar.style.width = percent + "%";
-
-    // 🔴 last 5 seconds turn red
-    if (timeLeft <= 5) {
-      timerEl.style.color = "red";
-      bar.style.background = "red";
-    }
-
-    if (timeLeft <= 0) {
-      clearInterval(roundTimer);
-    }
-  }, 1000);
-}
-
-function stopTimer() {
-  clearInterval(roundTimer);
-
-  document.getElementById("timer").textContent = "0";
-  document.getElementById("timerBar").style.width = "0%";
-}
 
   // =========================
   // 💬 CHAT
@@ -208,7 +207,6 @@ function stopTimer() {
 
     popup.style.display = "flex";
 
-    // 🚫 disable input
     guessInput.disabled = true;
     guessButton.disabled = true;
 
@@ -216,7 +214,6 @@ function stopTimer() {
 
     popup.style.display = "none";
 
-    // 🔓 enable input
     guessInput.disabled = false;
     guessButton.disabled = false;
     guessInput.focus();
@@ -228,13 +225,12 @@ function stopTimer() {
   ws.onmessage = async (event) => {
     const data = JSON.parse(event.data);
 
-    console.log("📩", data);
-
     switch (data.type) {
       case "new-round":
         guessedPlayers = [];
         updatePlayerList(lastUsers);
-        startTimer(data.duration);
+
+        startTimer(data.duration || 30);
 
         document.getElementById("chatBox").innerHTML = "";
         guessInput.value = "";
@@ -249,7 +245,6 @@ function stopTimer() {
           `Round ${data.round}`;
 
         guessInput.focus();
-
         playSong(data.song);
         break;
 
@@ -275,8 +270,8 @@ function stopTimer() {
 
       case "round-end":
         roundEndSound.play();
-        showLeaderboard(data.leaderboard, data.song);
         stopTimer();
+        showLeaderboard(data.leaderboard, data.song);
         break;
 
       case "resumeGame":
@@ -290,14 +285,11 @@ function stopTimer() {
       case "chat":
         addChatMessage(data);
         break;
-
-      default:
-        console.warn("Unknown message:", data.type);
     }
   };
 
   ws.onclose = () => {
-    console.log("❌ Disconnected");
+    console.log("Disconnected");
   };
 
   ws.onerror = (err) => {
