@@ -79,6 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
       bar.style.background = "#4caf50"; // reset color
     }
 
+    //test
+
     timerEl.style.color = "white";
 
     roundTimer = setInterval(() => {
