@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case "new-round":
         guessedPlayers = [];
         updatePlayerList(lastUsers);
-        startTimer(30);
+        startTimer(data.duration);
 
         document.getElementById("chatBox").innerHTML = "";
         guessInput.value = "";
