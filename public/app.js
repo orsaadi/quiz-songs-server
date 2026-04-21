@@ -9,6 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let guessedPlayers = [];
   let lastUsers = [];
 
+  let roundTimer = null;
+  let timeLeft = 30;
+
   const guessInput = document.getElementById("guessInput");
   const guessButton = document.getElementById("guessBtn");
 
@@ -92,6 +95,28 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("PLAY ERROR:", err);
       document.getElementById("status").innerText = "Error: " + err.message;
     }
+  }
+
+    function startTimer(duration = 30) {
+    const timerEl = document.getElementById("timer");
+  
+    clearInterval(roundTimer);
+  
+    timeLeft = duration;
+    timerEl.textContent = timeLeft;
+  
+    roundTimer = setInterval(() => {
+      timeLeft--;
+      timerEl.textContent = timeLeft;
+  
+      if (timeLeft <= 0) {
+        clearInterval(roundTimer);
+      }
+    }, 1000);
+  }
+  
+  function stopTimer() {
+    clearInterval(roundTimer);
   }
 
   // =========================
@@ -190,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case "new-round":
         guessedPlayers = [];
         updatePlayerList(lastUsers);
+        startTimer(30);
 
         document.getElementById("chatBox").innerHTML = "";
         guessInput.value = "";
@@ -231,6 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case "round-end":
         roundEndSound.play();
         showLeaderboard(data.leaderboard, data.song);
+        stopTimer();
         break;
 
       case "resumeGame":
