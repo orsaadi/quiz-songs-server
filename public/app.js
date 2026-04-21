@@ -103,6 +103,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
+  async function showGameOver(leaderboard) {
+  const popup = document.getElementById("gameOverPopup");
+  const content = document.getElementById("gameOverContent");
+
+  content.innerHTML = `
+    <h2>🏁 Game Over</h2>
+    <h3>Final Leaderboard</h3>
+  `;
+
+  leaderboard
+    .sort((a, b) => b.score - a.score)
+    .forEach((user) => {
+      const div = document.createElement("div");
+      div.textContent = `${user.username} - ${user.score}`;
+      content.appendChild(div);
+    });
+
+  // 🎮 buttons
+  const btnContainer = document.createElement("div");
+  btnContainer.style.marginTop = "15px";
+
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "Back to Lobby";
+  backBtn.className = "btn btn-primary";
+
+  backBtn.onclick = () => {
+    popup.style.display = "none";
+
+    // reset UI manually
+    document.getElementById("status").innerText = "Waiting for host...";
+    document.getElementById("roundDisplay").textContent = "Lobby";
+
+    // 🔓 enable input again
+    guessInput.disabled = false;
+    guessButton.disabled = false;
+  };
+
+  btnContainer.appendChild(backBtn);
+  content.appendChild(btnContainer);
+
+  popup.style.display = "flex";
+}
+
   function stopTimer() {
     clearInterval(roundTimer);
 
@@ -287,7 +330,15 @@ document.addEventListener("DOMContentLoaded", () => {
       case "chat":
         addChatMessage(data);
         break;
+
+      case "game-over":
+        stopTimer();
+        
+        showGameOver(data.leaderboard);
+      break;
     }
+
+
   };
 
   ws.onclose = () => {
